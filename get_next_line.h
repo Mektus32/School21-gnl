@@ -1,25 +1,21 @@
-/* ************************************************************************** */
-/*                                                                            */
-/*                                                        :::      ::::::::   */
-/*   get_next_line.h                                    :+:      :+:    :+:   */
-/*                                                    +:+ +:+         +:+     */
-/*   By: ojessi <marvin@42.fr>                      +#+  +:+       +#+        */
-/*                                                +#+#+#+#+#+   +#+           */
-/*   Created: 2019/04/11 19:31:24 by ojessi            #+#    #+#             */
-/*   Updated: 2019/04/11 20:46:24 by ojessi           ###   ########.fr       */
-/*                                                                            */
-/* ************************************************************************** */
-
 #ifndef GET_NEXT_LINE
 # define GET_NEXT_LINE
-# define BUF_SIZE 32
+# define BUF_SIZE 10
 
-# include <sys/types.h>
-# include <sys/stat.h>
-# include <fcntl.h>
-# include <unistd.h>
-# include <stdlib.h>
-# include "libft.h"
+#include <sys/types.h>
+#include <sys/stat.h>
+#include <fcntl.h>
+#include <stdlib.h>
+#include <io.h>
+#include <stdio.h>
+#include "libft.h"
+
+typedef	struct		s_fd
+{
+	int				fd;
+	char			*str;
+	struct s_fd		*next;
+}					t_fd;
 
 int		get_next_line(const int fd, char **line);
 
