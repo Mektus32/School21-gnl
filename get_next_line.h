@@ -6,9 +6,9 @@
 #include <sys/stat.h>
 #include <fcntl.h>
 #include <stdlib.h>
-#include <io.h>
+//#include <io.h>
 #include <stdio.h>
-#include "libft.h"
+#include "libft/libft.h"
 
 typedef	struct		s_fd
 {
@@ -16,6 +16,7 @@ typedef	struct		s_fd
 	char			*str;
 	struct s_fd		*next;
 	int				flag;
+	int				count;
 }					t_fd;
 
 int		get_next_line2(const int fd, char **line);
