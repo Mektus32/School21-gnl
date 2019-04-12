@@ -15,8 +15,9 @@ typedef	struct		s_fd
 	int				fd;
 	char			*str;
 	struct s_fd		*next;
+	int				flag;
 }					t_fd;
 
-int		get_next_line(const int fd, char **line);
+int		get_next_line2(const int fd, char **line);
 
 #endif
