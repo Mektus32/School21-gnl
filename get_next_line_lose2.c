@@ -1,26 +1,29 @@
 #include "get_next_line.h"
 
-static  t_fd    *ft_add_elem_and_find(t_fd *list, int fd, char *str, int flag)
+static  t_fd    *ft_add_elem_and_find(t_fd **head, int fd, char *str, int flag)
 {
-    while (list && list->fd != fd)
-        list = list->next;
+	t_fd	*list;
+
+	list = *head;
 	printf("list = %p\n", list);//Вот тут выдает 0x0
+    while (list && (list)->fd != fd)
+        list = (list)->next;
     if (list)
-        if (list->fd == fd)
+        if ((list)->fd == fd)
 		{
-			list->flag = 0;
+			(list)->flag = 0;
             return (list);
 		}
 	if(!(list = (t_fd*)malloc(sizeof(t_fd))))
         return (NULL);
-    list->fd = fd;
-	list->str = str;
-    if (!(list->str = (char*)malloc(sizeof(char))))
+    (list)->fd = fd;
+	(list)->str = str;
+    if (!((list)->str = (char*)malloc(sizeof(char))))
 		return (NULL);
-	list->str[0] = '\0'; 
-    list->flag = flag;
-    list->next = NULL;
-	list->count = 0;
+	(list)->str[0] = '\0'; 
+    (list)->flag = flag;
+    (list)->next = NULL;
+	(list)->count = 0;
     return (list);
 }
 
@@ -100,7 +103,9 @@ int     get_next_line2(int fd, char **line)
 
     if (!fd || !line)
         return (-1);
-    if (!(cur = ft_add_elem_and_find(list, fd, NULL, 0)))//Был ли уже открыт этот файл или нет
+	//if (!(list = (t_fd*)malloc(sizeof(t_fd))))
+	//	return (-6);
+    if (!(cur = ft_add_elem_and_find(&list, fd, NULL, 0)))//Был ли уже открыт этот файл или нет
         return (-2);
 	str = NULL;
     if (!(str = (char*)malloc(sizeof(char))))
@@ -112,7 +117,7 @@ int     get_next_line2(int fd, char **line)
         if (cur->flag)
 		{
 			line[cur->count] = str;
-			cur->count++;// += 1;
+			cur->count += 1;
 			printf("cur->count = %d\n", cur->count);
 			printf("endfunct pointer list = %p\n", cur);
 			return (5);

@@ -1,63 +1,93 @@
 #include "get_next_line.h"
 
-static	char	*ft_fill_str(char *str, int ret, char *buf, int *flag)
+t_fd	*ft_add_and_find_elem(t_fd **head, int fd)
 {
-	char	*new;
-	int		i;
+	t_fd	*list;
 
-	buf[ret] = '\0';
-	//Сначала делать merge динамического массива с buf, потом уже этот массив со строкой str
-	i = 0;
-	while (buf[i] != '\n' && i < ret)
-		i++;
-	if (i == ret)
+	list = *head;
+	while (list && list->fd != fd)
+		list = list->next;
+	if (list && list->fd == fd)
+		return (list);
+	if (!(list = (t_fd*)malloc(sizeof(t_fd))))
+		return (NULL);
+	list->fd = fd;
+	list->str= NULL;
+	list->ret = 0;
+	list->count = 0;
+	list->next = NULL;
+	return (list);
+}
+
+int		ft_return_line(t_fd *cur, char **line)
+{
+	int		len;
+	char	*new;
+	char	*tmp;
+	int		tmplen;
+
+	len = 0;
+	while (cur->str[len] != '\n')
+		len++;
+	if (!(new = (char*)malloc(sizeof(char) * (len + 1))))
+		return (-1);
+	new[len] = '\0';
+	len = -1;
+	while (new[++len] != '\0')
+		new[len] = cur->str[len];
+	if (len == cur->ret)
 	{
-		new = ft_strjoin(str, buf);
-		free(str);
-		//str = NULL;//Надо ли?
+		free(cur->str);
+		cur->str = NULL;
 	}
 	else
 	{
-		// Создать динамический статический массив под остаток от buf после ft_strjoin, при полном вхождении его очищать
-		//buf[i] = '\0';
-		new = ft_strjoin(str, buf);
-		free(str);
-		//str = NULL;//Надо ли?
-		*flag = 1;
+		cur->ret -= len--;//Длина остаточной строки
+		if (!(tmp = (char*)malloc(sizeof(char) * (cur->ret + 1))))
+			return (-1);
+		tmplen = 0;
+		while (cur->str[++len] != '\0')
+			tmp[tmplen++] = cur->str[len];
+		free(cur->str);
+		cur->str = new;
 	}
-	return (new);
+	line[cur->count++] = new;
+	return (0);
 }
 
-int		get_next_line(const int fd, char **line)
+int     get_next_line(int fd,  char **line)
 {
-	char	*str;
-	int		ret;
-	char	buf[BUF_SIZE + 1];
-	int		flag;
+	char				buf[BUF_SIZE + 1];
+	static	t_fd		*list;
+	t_fd				*cur;
 
-	flag = 0;
-	str = NULL;
-	if (!fd || !line) // если line = NULL?
-		return (-1);
-	if(!(str = (char*)malloc(sizeof(char))))
-		return (-1);
-	str[0] = '\0';
-	while ((ret = read(fd, buf, BUF_SIZE)))
+	printf("first place\n");
+	if (list && cur->ret > 0)
+		if (!(cur = ft_add_and_find_elem(&list, fd)))
+			return(-1);
+		else if (cur->str && ft_memchr(cur->str, '\n', ft_strlen(cur->str)))
+			return (ft_return_line(cur, line));
+	printf("second place\n");
+	if (!list)
+		if (!(list = ft_add_and_find_elem(&list, fd)))
+			return (-1);
+	printf("third place\n");
+	if (!(cur = ft_add_and_find_elem(&list, fd)))
+			return(-1);
+	printf("forth place\n");
+	while ((cur->ret = read(fd, buf, BUF_SIZE)) > 0)
 	{
-		str = ft_fill_str(str, ret, buf, &flag);
-		if (flag)
-			break ;
+		buf[BUF_SIZE] = '\0';
+		printf("ret = %d\n", cur->ret);
+		printf("buf = %s", buf);
+		if (!cur->str)
+			cur->str = ft_strcpy(ft_strnew(cur->ret), buf);
+		else
+			cur->str = ft_strjoin(cur->str, buf);//leak
+		printf("five place str = %s\n", cur->str);
+		if (ft_memchr(cur->str, '\n', ft_strlen(cur->str)))
+			return (ft_return_line(cur, line));
+		printf("six place\n");
 	}
-	*line = str;
-	printf("%s\n", *line);
-	// str = NULL;
-	// while ((ret = read(fd, buf, BUF_SIZE)))
-	// {
-	// 	str = ft_fill_str(str, ret, buf, &flag);
-	// 	if (flag)
-	// 		break ;
-	// }
-	// *line = str;
-	// printf("%s", *line);
-	return (1);
+	return (0);
 }

@@ -21,8 +21,8 @@ int		main(void)
 	if (!(fd = open("test", O_RDONLY)))
 		return (-1);
 	for (int i = 0; i < 3; i++)
-		printf("gnl = %d\n", get_next_line2(fd, line));
-	for (int i = 0; i < 1; i++)
+		printf("gnl = %d\n", get_next_line(fd, line));
+	for (int i = 0; i < 3; i++)
 		printf("str[%d] = %s\n", i, line[i]);
 	return (0);
 }
