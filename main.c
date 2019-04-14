@@ -6,7 +6,7 @@
 /*   By: ojessi <marvin@42.fr>                      +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2019/04/12 18:26:42 by ojessi            #+#    #+#             */
-/*   Updated: 2019/04/12 20:10:21 by ojessi           ###   ########.fr       */
+/*   Updated: 2019/04/14 15:20:19 by ojessi           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -23,6 +23,7 @@ int		main(void)
 	for (int i = 0; i < 3; i++)
 		printf("gnl = %d\n", get_next_line(fd, line));
 	for (int i = 0; i < 3; i++)
+
 		printf("str[%d] = %s\n", i, line[i]);
 	return (0);
 }
