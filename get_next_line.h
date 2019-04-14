@@ -1,6 +1,6 @@
 #ifndef GET_NEXT_LINE
 # define GET_NEXT_LINE
-# define BUF_SIZE 10
+# define BUF_SIZE 3
 
 #include <sys/types.h>
 #include <sys/stat.h>

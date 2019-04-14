@@ -1,11 +1,15 @@
 #include "get_next_line.h"
 
-static  t_fd    *ft_add_elem_and_find(t_fd *list, int fd, char *str, int flag)
+static  t_fd    *ft_add_elem_and_find(t_fd **head, int fd, char *str, int flag)
 {
+	t_fd	*list;
+
+	list = *head;
+
+	printf("Adress lista v nachale dobavlenia = %p\n", list);//Вот тут выдает 0x0
     while (list && list->fd != fd)
         list = list->next;
-	printf("list = %p\n", list);//Вот тут выдает 0x0
-    if (list)
+	if (list)
         if (list->fd == fd)
 		{
 			list->flag = 0;
@@ -32,7 +36,7 @@ char	*ft_change_str_list(char *str, int i)
 
     //i++;//?
     len = ft_strlen(&(str[++i]));
-	printf("len ft_change_str_list = %d\n", len);
+	printf("dlina ostatka posle obrazania simvolom '\\n' v ft_change_str = %d\n", len);
     tmp = (char*)malloc(sizeof(char) * (len + 1));
     j = 0;
     tmp[len] = '\0';
@@ -49,20 +53,22 @@ char	*ft_fill_line(char *str, t_fd *cur, char *buf, int ret)
 	int		i;
 	int		len;
 
+	buf[ret] = '\0';
 	len = ft_strlen(cur->str);
-	printf("\n\n\nlen in ft_fill_line = %d\n", len);
-	printf("buf in ft_fill_line = %s\n", buf);
-	printf("str in ft_fill_line = %s\n", str);
+	printf("\n\nkolichestvo schitannogo ret = %d\n", ret);
+	printf("dlina dinamiceskoy stroky v liste = %d\n", len);
+	printf("schitanaya stroka(buf) = %s§\n", buf);
+	printf("konechnaya stroka na danniy moment = %s§\n", str);
 	if(!(cur->str = ft_strjoin(cur->str, buf)))//leek
 		return (NULL);
-	printf("cur->str in ft_fill_line = %s\n", cur->str);
+	printf("dinamicheskay stroka + schitannaya stroka(buf) = %s§\n", cur->str);
 	i = 0;
 	while (cur->str[i] != '\n' && i < (ret + len))
 		i++;
 	if (i == (ret + len))
 	{
 		new = ft_strjoin(str, cur->str);
-		printf("new in ft_fill_line = %s\n", new);
+		printf("novaya konechnaya stroka do koncha razmera shitanoy stroki(buf) = %s§\n", new);
       	free(str);
 		if (!(str = (char*)malloc(sizeof(char))))
 			return (NULL);
@@ -72,15 +78,15 @@ char	*ft_fill_line(char *str, t_fd *cur, char *buf, int ret)
 			return (NULL);
 		cur->str[0] = '\0';
 	}
-	printf("i = %d\n", i);
+	//printf("i = %d\n", i);
 	if (cur->str[i] == '\n')
 	{
 		cur->str[i] = '\0';
 		new = ft_strjoin(str, cur->str);
-		printf("new in ft_fill_line = %s\n", new);
+		printf("novaya konechnay stroka do simvola '\\n' = %s§\n", new);
         cur->str = ft_change_str_list(cur->str, i);
-		printf("cur->str in ft_fill_line -> change_str = %s\n", cur->str);	
         free(str);
+		printf("ostatok posle izmeneniya konechnoy stroki = %s§\n", cur->str);
 		if (!(str = (char*)malloc(sizeof(char))))
 			return (NULL);
 		str[0] = '\0';
@@ -95,12 +101,16 @@ int     get_next_line2(int fd, char **line)
     int				ret;
     char			buf[BUF_SIZE + 1];
     char			*str;
-    static t_fd		*list;
-    t_fd			*cur;
+    static t_fd		*list = NULL;
+	t_fd			*cur;
 
+	printf("BUF_SIZE = %d\n", BUF_SIZE);
     if (!fd || !line)
         return (-1);
-    if (!(cur = ft_add_elem_and_find(list, fd, NULL, 0)))//Был ли уже открыт этот файл или нет
+	if (!list)
+		if (!(list = ft_add_elem_and_find(&list, fd, NULL, 0)))
+			return (-6);
+    if (!(cur = ft_add_elem_and_find(&list, fd, NULL, 0)))//Был ли уже открыт этот файл или нет
         return (-2);
 	str = NULL;
     if (!(str = (char*)malloc(sizeof(char))))
@@ -112,9 +122,9 @@ int     get_next_line2(int fd, char **line)
         if (cur->flag)
 		{
 			line[cur->count] = str;
-			cur->count++;// += 1;
-			printf("cur->count = %d\n", cur->count);
-			printf("endfunct pointer list = %p\n", cur);
+			cur->count += 1;
+			printf("kolichetvo strok = %d\n", cur->count);
+			printf("adress lista pered vihodom is functii = %p\n\n\n", cur);
 			return (5);
 		}		
     }
