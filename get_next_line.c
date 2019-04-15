@@ -6,7 +6,7 @@
 /*   By: ojessi <marvin@42.fr>                      +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2019/04/15 14:18:50 by ojessi            #+#    #+#             */
-/*   Updated: 2019/04/15 14:21:09 by ojessi           ###   ########.fr       */
+/*   Updated: 2019/04/15 14:23:58 by ojessi           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -75,7 +75,7 @@ int		ft_return_line(t_fd *cur, char **line)
 	line[cur->count++] = new;
 	//printf("zakonchenaya stroka = %s\n", new);
 	//printf("ostatok stroki = %s\n", cur->str);
-	return (0);
+	return (1);
 }
 
 int     get_next_line(int fd,  char **line)
