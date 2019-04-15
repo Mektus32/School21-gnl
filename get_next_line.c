@@ -1,3 +1,15 @@
+/* ************************************************************************** */
+/*                                                                            */
+/*                                                        :::      ::::::::   */
+/*   get_next_line.c                                    :+:      :+:    :+:   */
+/*                                                    +:+ +:+         +:+     */
+/*   By: ojessi <marvin@42.fr>                      +#+  +:+       +#+        */
+/*                                                +#+#+#+#+#+   +#+           */
+/*   Created: 2019/04/15 14:18:50 by ojessi            #+#    #+#             */
+/*   Updated: 2019/04/15 14:21:09 by ojessi           ###   ########.fr       */
+/*                                                                            */
+/* ************************************************************************** */
+
 #include "get_next_line.h"
 
 t_fd	*ft_add_and_find_elem(t_fd **head, int fd)
@@ -5,12 +17,21 @@ t_fd	*ft_add_and_find_elem(t_fd **head, int fd)
 	t_fd	*list;
 
 	list = *head;
-	while (list && list->fd != fd)
+	while (list && list->next && list->fd != fd)
 		list = list->next;
 	if (list && list->fd == fd)
 		return (list);
-	if (!(list = (t_fd*)malloc(sizeof(t_fd))))
-		return (NULL);
+	if (!list)
+	{
+		if (!(list = (t_fd*)malloc(sizeof(t_fd))))
+			return (NULL);
+	}
+	else if (!list->next)
+	{
+		if (!(list->next = (t_fd*)malloc(sizeof(t_fd))))
+			return (NULL);
+		list = list->next;
+	}
 	list->fd = fd;
 	list->str= NULL;
 	list->ret = 0;
@@ -32,9 +53,9 @@ int		ft_return_line(t_fd *cur, char **line)
 	if (!(new = (char*)malloc(sizeof(char) * (len + 1))))
 		return (-1);
 	new[len] = '\0';
-	len = -1;
-	while (new[++len] != '\0')
-		new[len] = cur->str[len];
+	tmplen = -1;
+	while (++tmplen < len)
+		new[tmplen] = cur->str[tmplen];
 	if (len == cur->ret)
 	{
 		free(cur->str);
@@ -42,52 +63,50 @@ int		ft_return_line(t_fd *cur, char **line)
 	}
 	else
 	{
-		cur->ret -= len--;//Длина остаточной строки
+		cur->ret = ft_strlen(cur->str) - len;//Длина остаточной строки
 		if (!(tmp = (char*)malloc(sizeof(char) * (cur->ret + 1))))
 			return (-1);
 		tmplen = 0;
 		while (cur->str[++len] != '\0')
 			tmp[tmplen++] = cur->str[len];
 		free(cur->str);
-		cur->str = new;
+		cur->str = tmp;
 	}
 	line[cur->count++] = new;
+	//printf("zakonchenaya stroka = %s\n", new);
+	//printf("ostatok stroki = %s\n", cur->str);
 	return (0);
 }
 
 int     get_next_line(int fd,  char **line)
 {
-	char				buf[BUF_SIZE + 1];
+	char				buf[BUFF_SIZE + 1];
 	static	t_fd		*list;
 	t_fd				*cur;
 
-	printf("first place\n");
-	if (list && cur->ret > 0)
+	if (list && list->ret > 0)
+	{
 		if (!(cur = ft_add_and_find_elem(&list, fd)))
 			return(-1);
 		else if (cur->str && ft_memchr(cur->str, '\n', ft_strlen(cur->str)))
 			return (ft_return_line(cur, line));
-	printf("second place\n");
+	}
 	if (!list)
 		if (!(list = ft_add_and_find_elem(&list, fd)))
 			return (-1);
-	printf("third place\n");
 	if (!(cur = ft_add_and_find_elem(&list, fd)))
 			return(-1);
-	printf("forth place\n");
-	while ((cur->ret = read(fd, buf, BUF_SIZE)) > 0)
+	while ((cur->ret = read(fd, buf, BUFF_SIZE)) > 0)
 	{
-		buf[BUF_SIZE] = '\0';
-		printf("ret = %d\n", cur->ret);
-		printf("buf = %s", buf);
+		buf[BUFF_SIZE] = '\0';
+		//printf("schitannaya stroka = %s\n", buf);
 		if (!cur->str)
 			cur->str = ft_strcpy(ft_strnew(cur->ret), buf);
 		else
 			cur->str = ft_strjoin(cur->str, buf);//leak
-		printf("five place str = %s\n", cur->str);
+		//printf("stroka posle sliayania = %s\n", cur->str);
 		if (ft_memchr(cur->str, '\n', ft_strlen(cur->str)))
 			return (ft_return_line(cur, line));
-		printf("six place\n");
 	}
-	return (0);
+	return (1);
 }

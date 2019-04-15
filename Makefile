@@ -6,12 +6,12 @@
 #    By: ojessi <marvin@42.fr>                      +#+  +:+       +#+         #
 #                                                 +#+#+#+#+#+   +#+            #
 #    Created: 2019/04/12 18:31:03 by ojessi            #+#    #+#              #
-#    Updated: 2019/04/12 18:56:56 by ojessi           ###   ########.fr        #
+#    Updated: 2019/04/15 13:58:40 by ojessi           ###   ########.fr        #
 #                                                                              #
 # **************************************************************************** #
 
 NAME = gnl
-SRC = get_next_line2.c main.c \
+SRC = get_next_line.c main.c \
 	  libft/*.c
 HEAD = get_next_line.h
 FLAGS = -Wextra -Wall -Werror
