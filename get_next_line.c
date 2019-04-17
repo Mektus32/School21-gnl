@@ -5,108 +5,107 @@
 /*                                                    +:+ +:+         +:+     */
 /*   By: ojessi <marvin@42.fr>                      +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
-/*   Created: 2019/04/15 14:18:50 by ojessi            #+#    #+#             */
-/*   Updated: 2019/04/15 14:23:58 by ojessi           ###   ########.fr       */
+/*   Created: 2019/04/15 17:59:32 by ojessi            #+#    #+#             */
+/*   Updated: 2019/04/17 17:11:54 by ojessi           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "get_next_line.h"
 
-t_fd	*ft_add_and_find_elem(t_fd **head, int fd)
+static	char	*ft_free_joint(char *new, char *src)
 {
-	t_fd	*list;
+	char		*tmp;
 
-	list = *head;
-	while (list && list->next && list->fd != fd)
-		list = list->next;
-	if (list && list->fd == fd)
-		return (list);
-	if (!list)
-	{
-		if (!(list = (t_fd*)malloc(sizeof(t_fd))))
-			return (NULL);
-	}
-	else if (!list->next)
-	{
-		if (!(list->next = (t_fd*)malloc(sizeof(t_fd))))
-			return (NULL);
-		list = list->next;
-	}
-	list->fd = fd;
-	list->str= NULL;
-	list->ret = 0;
-	list->count = 0;
-	list->next = NULL;
-	return (list);
+	if (!(tmp = ft_strjoin(new, src)))
+		return (NULL);
+	free(new);
+	new = NULL;
+	return (tmp);
 }
 
-int		ft_return_line(t_fd *cur, char **line)
+static	char	*ft_fill_line(char *str)
 {
-	int		len;
-	char	*new;
-	char	*tmp;
-	int		tmplen;
+	int			i;
+	int			len;
+	char		*new;
 
+	i = 0;
 	len = 0;
-	while (cur->str[len] != '\n')
+	while (str[i])
+	{
+		i++;
 		len++;
-	if (!(new = (char*)malloc(sizeof(char) * (len + 1))))
-		return (-1);
-	new[len] = '\0';
-	tmplen = -1;
-	while (++tmplen < len)
-		new[tmplen] = cur->str[tmplen];
-	if (len == cur->ret)
-	{
-		free(cur->str);
-		cur->str = NULL;
 	}
-	else
+	new = (char*)malloc(sizeof(char) * len + 1);
+	i = 0;
+	while (str[i] != '\n' && i < len)
 	{
-		cur->ret = ft_strlen(cur->str) - len;//Длина остаточной строки
-		if (!(tmp = (char*)malloc(sizeof(char) * (cur->ret + 1))))
-			return (-1);
-		tmplen = 0;
-		while (cur->str[++len] != '\0')
-			tmp[tmplen++] = cur->str[len];
-		free(cur->str);
-		cur->str = tmp;
+		new[i] = str[i];
+		i++;
 	}
-	line[cur->count++] = new;
-	//printf("zakonchenaya stroka = %s\n", new);
-	//printf("ostatok stroki = %s\n", cur->str);
-	return (1);
+	new[i] = '\0';
+	return (new);
 }
 
-int     get_next_line(int fd,  char **line)
+static	char	*ft_del(char *str)
 {
-	char				buf[BUFF_SIZE + 1];
-	static	t_fd		*list;
-	t_fd				*cur;
+	char		*new;
+	int			i;
 
-	if (list && list->ret > 0)
+	i = 0;
+	while (str[i] != '\n' && str[i])
+		i++;
+	if ((str[i] && !str[i + 1]) || !str[i])
 	{
-		if (!(cur = ft_add_and_find_elem(&list, fd)))
-			return(-1);
-		else if (cur->str && ft_memchr(cur->str, '\n', ft_strlen(cur->str)))
-			return (ft_return_line(cur, line));
+		ft_strdel(&str);
+		return (NULL);
 	}
+	new = ft_strdup(str + i + 1);
+	ft_strdel(&str);
+	return (new);
+}
+
+static	t_list	*ft_return_list(t_list **begin_list, int fd,
+		char **line)
+{
+	t_list		*list;
+	t_list		*cur;
+
+	if (fd < 0 || BUFF_SIZE < 0 || !line)
+		return (NULL);
+	list = *begin_list;
+	if (!(cur = ft_list_foreach_if(list, fd)))
+		if (!(cur = ft_list_push_back(&list, NULL, fd)))
+			return (NULL);
+	if (!cur->content)
+		cur->content = ft_strnew(1);
+	return (cur);
+}
+
+int				get_next_line(const int fd, char **line)
+{
+	static	t_list	*list = NULL;
+	int				ret;
+	char			buf[BUFF_SIZE + 1];
+	t_list			*cur;
+
 	if (!list)
-		if (!(list = ft_add_and_find_elem(&list, fd)))
-			return (-1);
-	if (!(cur = ft_add_and_find_elem(&list, fd)))
-			return(-1);
-	while ((cur->ret = read(fd, buf, BUFF_SIZE)) > 0)
+		list = ft_list_add(NULL, fd);
+	if (!(cur = ft_return_list(&list, fd, line)))
+		return (-1);
+	ret = 2;
+	while (!(ft_strchr(cur->content, '\n')))
 	{
-		buf[BUFF_SIZE] = '\0';
-		//printf("schitannaya stroka = %s\n", buf);
-		if (!cur->str)
-			cur->str = ft_strcpy(ft_strnew(cur->ret), buf);
-		else
-			cur->str = ft_strjoin(cur->str, buf);//leak
-		//printf("stroka posle sliayania = %s\n", cur->str);
-		if (ft_memchr(cur->str, '\n', ft_strlen(cur->str)))
-			return (ft_return_line(cur, line));
+		if ((ret = read(cur->content_size, buf, BUFF_SIZE)) == -1)
+			return (-1);
+		buf[ret] = '\0';
+		cur->content = ft_free_joint(cur->content, buf);
+		if (ret == 0 && *((char*)cur->content) == '\0')
+			return (0);
+		if (ret == 0)
+			break ;
 	}
+	*line = ft_fill_line(cur->content);
+	cur->content = ft_del(cur->content);
 	return (1);
 }
