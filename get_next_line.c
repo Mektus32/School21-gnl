@@ -6,7 +6,7 @@
 /*   By: ojessi <marvin@42.fr>                      +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2019/04/15 17:59:32 by ojessi            #+#    #+#             */
-/*   Updated: 2019/04/17 17:11:54 by ojessi           ###   ########.fr       */
+/*   Updated: 2019/04/18 21:17:28 by ojessi           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -23,34 +23,10 @@ static	char	*ft_free_joint(char *new, char *src)
 	return (tmp);
 }
 
-static	char	*ft_fill_line(char *str)
-{
-	int			i;
-	int			len;
-	char		*new;
-
-	i = 0;
-	len = 0;
-	while (str[i])
-	{
-		i++;
-		len++;
-	}
-	new = (char*)malloc(sizeof(char) * len + 1);
-	i = 0;
-	while (str[i] != '\n' && i < len)
-	{
-		new[i] = str[i];
-		i++;
-	}
-	new[i] = '\0';
-	return (new);
-}
-
 static	char	*ft_del(char *str)
 {
-	char		*new;
-	int			i;
+	char	*new;
+	int		i;
 
 	i = 0;
 	while (str[i] != '\n' && str[i])
@@ -62,6 +38,31 @@ static	char	*ft_del(char *str)
 	}
 	new = ft_strdup(str + i + 1);
 	ft_strdel(&str);
+	return (new);
+}
+
+static	char	*ft_fill_line(char **str)
+{
+	int			i;
+	int			len;
+	char		*new;
+
+	i = 0;
+	len = 0;
+	while ((*str)[i])
+	{
+		i++;
+		len++;
+	}
+	new = (char*)malloc(sizeof(char) * len + 1);
+	i = 0;
+	while ((*str)[i] != '\n' && i < len)
+	{
+		new[i] = (*str)[i];
+		i++;
+	}
+	*str = ft_del(*str);
+	new[i] = '\0';
 	return (new);
 }
 
@@ -93,19 +94,20 @@ int				get_next_line(const int fd, char **line)
 		list = ft_list_add(NULL, fd);
 	if (!(cur = ft_return_list(&list, fd, line)))
 		return (-1);
-	ret = 2;
 	while (!(ft_strchr(cur->content, '\n')))
 	{
-		if ((ret = read(cur->content_size, buf, BUFF_SIZE)) == -1)
+		if ((ret = read(fd, buf, BUFF_SIZE)) == -1)
 			return (-1);
 		buf[ret] = '\0';
 		cur->content = ft_free_joint(cur->content, buf);
 		if (ret == 0 && *((char*)cur->content) == '\0')
+		{
+			ft_list_remove_free_if(&list, fd);
 			return (0);
+		}
 		if (ret == 0)
 			break ;
 	}
-	*line = ft_fill_line(cur->content);
-	cur->content = ft_del(cur->content);
+	*line = ft_fill_line((char**)(&(cur->content)));
 	return (1);
 }
